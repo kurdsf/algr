@@ -1,44 +1,36 @@
-#include<string.h>
-#include<stdio.h>
-#include<limits.h>
+#include<iostream>
+#include<string>
+#include<cstring>
 
-#include"vec.h"
 #include"presedence.h"
 #include"parser.h"
 #include"optimizer.h"
 
-#define  MAX_NUMBER_OF_CHARS_PER_LINE 40
 
 int main(){
-    
-    printf("Welcome to the algr repl.\n");
-    printf("Remember max chars per line is %d.\n",MAX_NUMBER_OF_CHARS_PER_LINE);
-    printf("Also remember that the max int value is %d.\n",INT_MAX);
     AST* ast;
     while(1){
-        /* we need the string to be stored on the heap so it is mutable
-            and we can use realloc(...) on it */
-        char* str = malloc(MAX_NUMBER_OF_CHARS_PER_LINE);
-        if(str == NULL){
-            perror("algr: repl");
-            abort();
-        }
-        printf("\nalgr>");
-        fgets(str,MAX_NUMBER_OF_CHARS_PER_LINE,stdin);
-        
-        if(str[0] == 'q' &&  str[1] == '\n') {
-            free(str);
+        std::string input;
+        std::cout << "algr>";
+        std::getline(std::cin, input);
+
+        if(input == "q\n") {
             break;
         }
-        if(str[0] == '#'){
-            free(str);
+
+        if(input[0] == '#'){
             continue;
         }
-        ast = parse(str);
+        // TODO: Fix this workaround, make parse accept const char*.
+        char* tmp = new char[input.size() + 1];
+        strcpy(tmp, input.c_str());
+        tmp[input.size()] = '\0';
+        ast = parse(tmp);
+        delete[] tmp;
         ast = optimize(ast);
         putsAST(ast);
+        std::cout << '\n';
         freeAST(ast);
-        free(str);
     }
     return 0;
 }
