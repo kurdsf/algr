@@ -1,11 +1,10 @@
 
-CC := gcc
+CC := g++
 CFLAGS := -Wall -Ofast 
 TSTFLAGS := -Wall -fsanitize=leak,undefined,address -Og -ggdb -Wextra -Wno-sign-compare -fno-omit-frame-pointer 
 
 
-
-SRCS := lexer.c presedence.c parser.c vec.c rule.c algr.c optimizer.c
+SRCS := lexer.cc presedence.cc parser.cc vec.cc rule.cc algr.cc optimizer.cc
 	
 
 .DELETE_ON_ERROR:  repl
