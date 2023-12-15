@@ -1,209 +1,91 @@
-#include<ctype.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
-
-#include"vec.h"
-#include"algr.h"
+#include<iostream>
+#include<map>
+#include<string>
+#include<stdexcept>
+#include<queue>
 #include"lexer.h"
 
-/* TODO: Find out what functions need to be changed if 
-         you would like to add another token */
+static bool is_whitespace(char c) {
+    return c == '\n' || c == ' ' || c == '\t';
+}
 
-/* Internal functions */
+std::queue<Token> tokenize(const std::string input) {
+    std::queue<Token> res;
+    std::map<char, Token> char2token;
+    std::map<char, bool> is_single_char_token;
+    char2token['+'] = {TokenType::Add};
+    is_single_char_token['+'] = true;
+    char2token['-'] = {TokenType::Sub};
+    is_single_char_token['-'] = true;
+    char2token['*'] = {TokenType::Mul};
+    is_single_char_token['*'] = true;
+    char2token['/'] = {TokenType::Div};
+    is_single_char_token['/'] = true;
+    char2token['^'] = {TokenType::Pow};
+    is_single_char_token['^'] = true;
+    char2token['('] = {TokenType::Lparen};
+    is_single_char_token['('] = true;
+    char2token[')'] = {TokenType::Rparen};
+    is_single_char_token[')'] = true;
+    for(char i = 'a'; i <= 'z'; ++i) char2token[i] = {.type = TokenType::Var, .var = i};
+    for(char i = 'a'; i <= 'z'; ++i) is_single_char_token[i] = true;
 
-int step_till_next_symbol(char**);
+    for(size_t curr = 0; curr < input.size(); ++curr) {
+        Token empty;
+        if(is_whitespace(input[curr])) continue;
+        if(is_single_char_token[input[curr]]) {
+            res.push(char2token[input[curr]]);
+            continue;
+        }
 
-char is_single_char_token(char);
-
-char is_whitespace(char);
-
-_Noreturn void panic_invalid_token(char);
-
-void step_till_end_of_num(char**);
-
-int get_trailing_num(char*);
-
-
-
-/* This means that given an
-   expression like "3 op  3 op 4 op 3" we
-   evaluate it as "3 op (3 op (4 op 3))".
-   If this is not the case, we evaluate it 
-   as "(((3 op 3) op 3) 4) op 3"
-   where op is '+' or '-' etc.
-*/
-int is_left_assoc(Token op){
-    switch(op.type){
-        case Add:
-        case Mul:
-            return 0;
-        case Sub:
-        case Div:
-        case Pow:
-            return 1;
-        default:
-            /* The caller should prevent 
-               that op is not an operator */
-            unreachable();
+        // This can only be a number.
+        size_t pos;
+        try {
+            long val = std::stol(input.substr(curr, input.size() - curr), &pos);
+            res.push({.type = TokenType::Num, .num = val});
+            curr += pos;
+        } catch(std::invalid_argument const& ex) {
+            std::cerr << "algr:" << curr << ": not an integer literal\n";
+            exit(1);
+        } catch(std::out_of_range const& ex) {
+            std::cerr << "algr:" << curr << ": integer literal out of range\n";
+            exit(1);
+        }
     }
-}
-
-
-
-
-/* Returns -1 is there is no next symbol */
-int step_till_next_symbol(char** strp){
-    char* str = *strp;
-    while(is_whitespace(*str))
-        str++;
-    if(*str == '\0') return -1;
-    *strp = str;
-    return 0;
-}
-
-
-char is_single_char_token(char c){
-	return c == '('
-            || c == ')'
-            || c == '+'
- 	        || c == '-'
-            || c == '*'
-            || c == '^'
-	        || c == '/';
-}
-
-char is_whitespace(char c){
-	return c == ' '
-	    || c == '\t'
-	    || c == '\n';
-}
-
-
-_Noreturn void panic_invalid_token(char c){
-	fprintf(stderr,"Error: Invalid token `%c` found.\n",c);
-    abort();
-}
-
-
-
-void step_till_end_of_num(char** strp){
-    char* str = *strp;
-    while(isdigit(*str))
-        str++;
-    *strp = str;
-}
-
-int get_trailing_num(char* str){
-    size_t end_of_num_pos = 0;
-    while(isdigit(str[end_of_num_pos])){
-        end_of_num_pos++;
-    }
-    char tmp = str[end_of_num_pos];
-    str[end_of_num_pos] = '\0';
-    if(end_of_num_pos == 0){
-        /* the caller should check that the beginng of the string is a number */
-        unreachable();
-    }
-    int res = atoi(str);
-    str[end_of_num_pos] = tmp;
     return res;
 }
 
-/* We don't try to lex the string all at once,
-   rather we to always get the next token
-   and then cut of the beginning of the string 
-   For example:
-     x + 3*3 => Var('x') " + 3*3" => Var('x') Add "3*3" etc.
-*/
-
-int get_next_token(char** strp, Token* token){
-
-   if(step_till_next_symbol(strp) == -1)
-        return -1;
-
-   char* str = *strp;
-
-   if(is_single_char_token(*str)){
-        switch(*str){
-            case '+':
-                token->type = Add;
-                break;
-            case '-':
-                token->type = Sub;
-                break;
-            case '*':
-                token->type = Mul;
-                break;
-            case '/':
-                token->type = Div;
-                break;
-            case '^':
-                token->type = Pow;
-                break;
-            case '(':
-                token->type = Lparen;
-                break;
-            case ')':
-                token->type = Rparen;
-                break;
-            default:
-                /* should be only the above chars by the above if statement */
-                unreachable();
-        }
-        str++;
-   }
-   else if(isalpha(*str)){
-        token->type = Var;
-        token->var = *str;
-        str++;
-   }
-   else if(isdigit(*str)){
-        token->type = Num;
-        token->num = get_trailing_num(str);
-        step_till_end_of_num(&str);
-        
-   }
-   else {
-    
-        panic_invalid_token(*str);
-   }
-   *strp = str;
-   return 0;
-}
-
-void print_token_to_stderr(Token t){
-    switch(t.type){
-        case Add:
-            fprintf(stderr,"+");
+std::ostream& operator>>(std::ostream& os, Token t){
+    switch(t.type) {
+        case TokenType::Add:
+            os << '+';
             break;
-        case Sub:
-            fprintf(stderr,"-");
+        case TokenType::Sub:
+            os << '-';
             break;
-        case Mul:
-            fprintf(stderr,"*");
+        case TokenType::Mul:
+            os << '*';
             break;
-        case Div:
-            fprintf(stderr,"/");
+        case TokenType::Div:
+            os << '/';
             break;
-        case Pow:
-            fprintf(stderr,"^");
+        case TokenType::Pow:
+            os << '^';
             break;
-        case Lparen:
-            fprintf(stderr,"(");
+        case TokenType::Lparen:
+            os << '(';
             break;
-        case Rparen:
-            fprintf(stderr,")");
+        case TokenType::Rparen:
+            os << ')';
             break;
-        case Var:
-            fprintf(stderr,"%c",t.var);
+        case TokenType::Var:
+            os << "variable " << t.var;
             break;
-        case Num:
-            fprintf(stderr,"%d",t.num);
+        case TokenType::Num:
+            os << "number " << t.num;
             break;
-        default:
-            /* Unknown type */
-            unreachable();
     }
-    return;
+
+    return os;
 }
+

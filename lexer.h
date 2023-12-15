@@ -1,40 +1,33 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include<queue>
+#include<string>
 
 
-enum TokenType {
+enum class TokenType {
 	Add,
 	Sub,
 	Mul,
 	Div,
-    Pow,
+	Pow,
 	Lparen,
 	Rparen,
 	Var,
-    Num
+	Num
+};
+
+
+struct Token {
+	TokenType type;
+	long num; // only used if type == Num.
+	char var; // only used if type == Var.
 };
 
 
 
-typedef struct {
-	enum TokenType type;
-	union {
-		int num;
-		char var;
-        };
-} Token;
+std::queue<Token> tokenize(const std::string& input);
 
-
-typedef Token* vec_Token;
-
-
-
-int is_left_assoc(Token);
-
-/* Returns -1 if there is not next token */
-int get_next_token(char**, Token*);
-
-void print_token_to_stderr(Token);
+std::ostream& operator>>(std::ostream& os, Token t);
 
 #endif /* LEXER_H */
