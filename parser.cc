@@ -17,20 +17,34 @@ Ast parse_primary(std::queue<Token>& tokens);
 
 Ast parse(std::queue<Token>& tokens) {
     Ast lhs = parse_product(tokens);
-    expect(tokens, {TokenType::Add});
-    Ast rhs = parse(tokens);
-    return {{TokenType::Add}, {lhs, rhs}};
+    if(tokens.size() > 0 
+        && tokens.front().type == TokenType::Add || tokens.front().type == TokenType::Sub) {
+        Token op = tokens.front();
+        tokens.pop();
+        Ast rhs = parse(tokens);
+        return {op, {lhs, rhs}};
+
+    }
+    return lhs;
 }
 
 Ast parse_product(std::queue<Token>& tokens) {
     Ast lhs = parse_primary(tokens);
-    expect(tokens, {TokenType::Mul});
-    Ast rhs = parse_product(tokens);
-    return {{TokenType::Mul}, {lhs, rhs}};
+    if(tokens.size() > 0 
+        && tokens.front().type == TokenType::Mul || tokens.front().type == TokenType::Div) {
+        Token op = tokens.front();
+        tokens.pop();
+        Ast rhs = parse_product(tokens);
+        return {op, {lhs, rhs}};
+
+    }
+    return lhs;
 }
 
+
+
 Ast parse_primary(std::queue<Token>& tokens) {
-    if(tokens.size() > 0 && tokens.front().type == TokenType::Num) {
+    if(tokens.size() > 0 && tokens.front().type == TokenType::Num || tokens.front().type == TokenType::Var) {
         Token res = tokens.front();
         tokens.pop();
         return {res, {}};
