@@ -28,6 +28,9 @@ struct Token {
 
 std::queue<Token> tokenize(const std::string& input);
 
-std::ostream& operator>>(std::ostream& os, Token t);
+std::ostream& operator<<(std::ostream& os, Token t);
+
+bool operator==(Token a, Token b);
+bool operator!=(Token a, Token b);
 
 #endif /* LEXER_H */
