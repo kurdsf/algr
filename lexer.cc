@@ -9,7 +9,7 @@ static bool is_whitespace(char c) {
     return c == '\n' || c == ' ' || c == '\t';
 }
 
-std::queue<Token> tokenize(const std::string input) {
+std::queue<Token> tokenize(const std::string& input) {
     std::queue<Token> res;
     std::map<char, Token> char2token;
     std::map<char, bool> is_single_char_token;
@@ -55,7 +55,7 @@ std::queue<Token> tokenize(const std::string input) {
     return res;
 }
 
-std::ostream& operator>>(std::ostream& os, Token t){
+std::ostream& operator<<(std::ostream& os, Token t){
     switch(t.type) {
         case TokenType::Add:
             os << '+';
@@ -87,5 +87,16 @@ std::ostream& operator>>(std::ostream& os, Token t){
     }
 
     return os;
+}
+
+bool operator==(Token a, Token b) {
+    if(a.type != b.type) return false;
+    if(a.type == TokenType::Var && a.var != b.var) return false;
+    if(a.type == TokenType::Num && a.num != b.num) return false;
+    return true;
+}
+
+bool operator!=(Token a, Token b) {
+    return !(a == b);
 }
 
