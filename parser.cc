@@ -38,7 +38,7 @@ Ast parse(std::queue<Token>& tokens) {
 static Ast parse_sum(std::queue<Token>& tokens) {
     Ast lhs = parse_product(tokens);
     if(tokens.size() > 0 
-        && tokens.front().type == TokenType::Add || tokens.front().type == TokenType::Sub) {
+        && (tokens.front().type == TokenType::Add || tokens.front().type == TokenType::Sub)) {
         Token op = tokens.front();
         tokens.pop();
         Ast rhs = parse_sum(tokens);
@@ -51,7 +51,7 @@ static Ast parse_sum(std::queue<Token>& tokens) {
 static Ast parse_product(std::queue<Token>& tokens) {
     Ast lhs = parse_primary(tokens);
     if(tokens.size() > 0 
-        && tokens.front().type == TokenType::Mul || tokens.front().type == TokenType::Div) {
+        && (tokens.front().type == TokenType::Mul || tokens.front().type == TokenType::Div)) {
         Token op = tokens.front();
         tokens.pop();
         Ast rhs = parse_product(tokens);
@@ -64,7 +64,7 @@ static Ast parse_product(std::queue<Token>& tokens) {
 
 
 static Ast parse_primary(std::queue<Token>& tokens) {
-    if(tokens.size() > 0 && tokens.front().type == TokenType::Num || tokens.front().type == TokenType::Var) {
+    if(tokens.size() > 0 && (tokens.front().type == TokenType::Num || tokens.front().type == TokenType::Var)) {
         Token res = tokens.front();
         tokens.pop();
         return {res, {}};
