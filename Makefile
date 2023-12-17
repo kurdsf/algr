@@ -1,11 +1,10 @@
 CC := g++
-CFLAGS := -Wall -Ofast 
-TSTFLAGS := -Wall -fsanitize=leak,undefined,address -Og -ggdb -Wextra -Wno-sign-compare -fno-omit-frame-pointer 
-
-SRCS := lexer.cc parser.cc repl.cc 
+CFLAGS := -Ofast 
+TSTFLAGS := -Wall -fsanitize=leak,undefined,address -Og -ggdb -Wno-sign-compare -fno-omit-frame-pointer
+SRCS := lexer.cc parser.cc 
 
 repl:
-	$(CC)  $(TSTFLAGS) -o repl  repl.c $(SRCS)
+	$(CC)  $(TSTFLAGS) -o repl  repl.cc $(SRCS)
 	./repl
 	
 clean:
