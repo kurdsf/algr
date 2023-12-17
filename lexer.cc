@@ -31,10 +31,11 @@ std::queue<Token> tokenize(const std::string& input) {
     for(char i = 'a'; i <= 'z'; ++i) is_single_char_token[i] = true;
 
     for(size_t curr = 0; curr < input.size(); ++curr) {
-        Token empty;
         if(is_whitespace(input[curr])) continue;
         if(is_single_char_token[input[curr]]) {
-            res.push(char2token[input[curr]]);
+            Token t = char2token[input[curr]];
+            t.pos = curr;
+            res.push(t);
             continue;
         }
 
@@ -42,13 +43,17 @@ std::queue<Token> tokenize(const std::string& input) {
         size_t pos;
         try {
             long val = std::stol(input.substr(curr, input.size() - curr), &pos);
-            res.push({.type = TokenType::Num, .num = val});
-            curr += pos;
+            res.push({.type = TokenType::Num, .num = val, .pos = curr});
+            curr += pos - 1;
         } catch(std::invalid_argument const& ex) {
-            std::cerr << "algr:" << curr << ": not an integer literal\n";
+            for(size_t i = 0; i < curr; ++i) std::clog << ' ';
+            std::clog << "^\n";
+            std::cerr << "algr: invalid character\n";
             exit(1);
         } catch(std::out_of_range const& ex) {
-            std::cerr << "algr:" << curr << ": integer literal out of range\n";
+            for(size_t i = 0; i < curr; ++i) std::clog << ' ';
+            std::clog << "^\n";
+            std::clog << "algr: integer literal out of range\n";
             exit(1);
         }
     }

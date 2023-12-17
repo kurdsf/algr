@@ -22,6 +22,7 @@ struct Token {
 	TokenType type;
 	long num; // only used if type == Num.
 	char var; // only used if type == Var.
+	size_t pos; 
 };
 
 
