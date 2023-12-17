@@ -43,7 +43,14 @@ static Ast parse_sum(std::queue<Token>& tokens) {
         Token op = tokens.front();
         tokens.pop();
         Ast rhs = parse_sum(tokens);
+        // The operator '-' is left-assoc. Therefore we have to reorder the termes a little bit.
+        // TODO: Find out when left-assoc is wanted by the user. Currently, we parse 3 - (2 - 1) as 
+        // (- (- 3 2) 1) which is not correct. 
+        if(op.type == TokenType::Sub && rhs.op.type == TokenType::Sub) {
+            return {op, {{op, {lhs, rhs.nodes[0]}}, rhs.nodes[1]}};
+        }
         return {op, {lhs, rhs}};
+
 
     }
     return lhs;
